@@ -77,5 +77,5 @@ For a real production environment, I would:
 7. **Monitoring and Observability**: Implement monitoring and observability for the application and infrastructure.
 8. **Scalability and Performance**: Implement auto-scaling for the application and database. 
 9. **Separate deployment & Infrastructure repo**: Separate deployment and infrastructure code into different repositories for better management and security.
-
+10. **Self Github Runner**: Used my own Github self runner for running the pipeline for CI/CD part, internal interaction control
 - **Total Time**: Approximately 2.5 hours.
