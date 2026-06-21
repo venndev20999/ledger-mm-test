@@ -1,0 +1,54 @@
+# Starter docker-compose for local development.
+# TODO: complete this so that `docker compose up` brings up the app together
+# with Postgres and Redis, the app waits for its dependencies to be healthy,
+# and `curl localhost:8000/` returns a 200 with a real db_time.
+#
+# Things worth getting right (we look for these):
+#   - healthchecks on postgres and redis, and depends_on: condition: service_healthy
+#   - the app reading DATABASE_URL / REDIS_URL via service DNS names, not localhost
+#   - not hardcoding secrets you would be embarrassed by in a real repo
+services:
+  app:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      APP_NAME: ledger-api
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:
+

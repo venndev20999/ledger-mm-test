@@ -1,0 +1,48 @@
+# A teammate deployed this to the local cluster and it "doesn't work."
+# It is self-contained and uses a public image, so you can reproduce it without
+# building anything:
+#
+#   kind create cluster --name takehome    # if you haven't already
+#   kubectl apply -f debug/broken-deployment.yaml
+#   kubectl get pods -w
+#
+# See debug/SYMPTOMS.md for what they observed. There may be more than one issue.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broken-web
+  labels:
+    app: broken-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: broken-web
+  template:
+    metadata:
+      labels:
+        app: broken-web
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80 # <- FIX: port nginx default value
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80 # <- FIX: port nginx default value
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 24Mi
